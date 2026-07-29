@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install Magic Roster</title>
+  <style>
+    /* Base Page Styling */
+    body {
+      background-color: #030712; /* Deep black/dark background */
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    /* The Button Container for the Halo Effect */
+    .button-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 40px;
+    }
+
+    /* The Blue Halo Effect */
+    .button-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background: #3b82f6; /* Blue color */
+      filter: blur(25px); /* Creates the halo */
+      opacity: 0.7;
+      border-radius: 50px;
+      z-index: 0;
+      transition: opacity 0.3s ease, filter 0.3s ease;
+      animation: pulse 3s infinite alternate;
+    }
+
+    /* The Magic Roster Button */
+    .bookmarklet-btn {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.5rem;
+      font-weight: bold;
+      padding: 16px 40px;
+      border-radius: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.2s ease;
+    }
+
+    .bookmarklet-btn:active {
+      cursor: grabbing;
+      transform: scale(0.95);
+    }
+
+    .bookmarklet-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Instructions Section */
+    .instructions {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: left;
+    }
+
+    .instructions h3 {
+      margin-top: 0;
+      color: #e2e8f0;
+      font-size: 1.2rem;
+    }
+
+    .instructions ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #cbd5e1;
+    }
+
+    .instructions li {
+      margin-bottom: 10px;
+    }
+
+    /* Halo Animation */
+    @keyframes pulse {
+      0% { filter: blur(20px); opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      100% { filter: blur(35px); opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    /* Mobile Adaptations */
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .bookmarklet-btn { font-size: 1.2rem; padding: 14px 30px; }
+      .button-wrapper::before { filter: blur(20px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Install Magic Roster</h1>
+    <p>Install this tool to quickly access your roster data from any supported page.</p>
+
+    <!-- The Button -->
+    <div class="button-wrapper">
+      <a 
+        href="javascript:(function(){const mainContainer=document.querySelector('#PrintRosterDiv-ModalBody');if(!mainContainer){alert('Error: Could not find the roster container on this page.');return;}const cloned=mainContainer.cloneNode(true);const svg=cloned.querySelector('#SVGContainer');if(svg)svg.remove();const styles=cloned.querySelectorAll('style');styles.forEach(s=>s.remove());const rawText=cloned.innerText.split('\n').filter(l=>l.trim()!=='').join('\n');const overlay=document.createElement('div');overlay.id='rostercal-magic-overlay';overlay.style.cssText='position:fixed;inset:0;background:rgba(3,7,18,0.85);backdrop-filter:blur(10px);z-index:999998;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s;';const iframe=document.createElement('iframe');iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='width:95vw;height:90vh;max-width:1200px;border:1px solid rgba(51,65,85,0.6);border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);background:#030712;z-index:999999;';const close=document.createElement('button');close.innerHTML='✕ Close';close.style.cssText='position:absolute;top:20px;right:5vw;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;font-weight:bold;padding:8px 16px;border-radius:20px;cursor:pointer;z-index:1000000;backdrop-filter:blur(5px);';close.onclick=()=>overlay.remove();overlay.appendChild(iframe);overlay.appendChild(close);document.body.appendChild(overlay);iframe.onload=()=>{iframe.contentWindow.postMessage({type:'ROSTER_DATA',text:rawText},'*');};})();" 
+        class="bookmarklet-btn" 
+        id="magic-btn"
+        title="Drag me to your bookmarks bar!">
+        Magic Roster
+      </a>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h3>💻 On Computer:</h3>
+      <ul>
+        <li>Click and drag the <strong>Magic Roster</strong> button up to your browser's Bookmarks Bar.</li>
+      </ul>
+      
+      <h3>📱 On Phone / Tablet:</h3>
+      <ul>
+        <li><strong>Step 1:</strong> Tap the button above to copy the code.</li>
+        <li><strong>Step 2:</strong> Bookmark this current page.</li>
+        <li><strong>Step 3:</strong> Edit the bookmark you just created. Change its name to "Magic Roster" and paste the copied code into the "URL" or "Address" field.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Script to handle mobile tapping
+    const btn = document.getElementById('magic-btn');
+    
+    btn.addEventListener('click', function(e) {
+      // Check if it's a mobile device or touch screen
+      if (window.innerWidth <= 768 || 'ontouchstart' in window) {
+        e.preventDefault(); // Stop it from trying to run the code right here
+        
+        // Copy the href (which contains the javascript code) to the clipboard
+        const code = this.getAttribute('href');
+        
+        navigator.clipboard.writeText(code).then(() => {
+          alert("✅ Bookmarklet code copied to your clipboard!\n\nNow, bookmark this page, edit the bookmark, and paste the code into the URL field.");
+        }).catch(err => {
+          alert("Could not copy the code automatically. Long-press the button to copy the link address.");
+        });
+      }
+      // On desktop, clicking it will just execute the code (which might show the error alert if not on the roster page, which is normal).
+    });
+  </script>
+
+</body>
+</html>
