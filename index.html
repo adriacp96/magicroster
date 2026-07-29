@@ -4,79 +4,339 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Magic Roster</title>
+
   <style>
+    :root {
+      --glass-bg: rgba(18, 18, 22, 0.55);
+      --glass-hover: rgba(28, 28, 35, 0.65);
+      --text-main: #ffffff;
+    }
+
     body {
       background-color: #000000;
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      padding: clamp(16px, 5vw, 32px);
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
     }
 
+    /* Canvas for organic, randomly drifting gradient orbs */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Responsive Main Wrapper */
+    .content-wrapper {
+      text-align: center;
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(24px, 5vh, 36px);
+      z-index: 1;
+    }
+
+    /* Button Container with Animated Greenish-Bluish Border Motion */
     .button-container {
       position: relative;
-      display: inline-block;
+      display: block;
+      width: 100%;
+      border-radius: 28px;
+      padding: 2px; /* Space for the animated border */
+      background: linear-gradient(60deg, #06b6d4, #10b981, #3b82f6, #06b6d4);
+      background-size: 300% 300%;
+      animation: borderMotion 4s ease infinite;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .button-container::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 120%;
-      height: 150%;
-      background: #3b82f6;
-      filter: blur(35px);
-      opacity: 0.8;
-      border-radius: 50px;
-      z-index: 0;
-      animation: pulse 2s infinite alternate ease-in-out;
+    .button-container:hover {
+      transform: scale(1.01);
     }
 
+    @keyframes borderMotion {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* Magic Roster Interactive Button */
     .magic-button {
       position: relative;
       z-index: 1;
-      display: inline-block;
-      background: #000000;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 1.5rem;
-      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: var(--text-main);
+      font-size: clamp(1rem, 2.5vw, 1.1rem);
+      font-weight: 600;
+      text-align: center;
       text-decoration: none;
-      padding: 16px 40px;
-      border-radius: 50px;
-      border: 1px solid rgba(59, 130, 246, 0.5);
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      padding: clamp(18px, 3.5vw, 22px) clamp(22px, 4.5vw, 28px);
+      border-radius: 26px;
+      border: none;
       user-select: none;
       -webkit-user-drag: element;
       cursor: grab;
+      transition: background 0.3s ease;
+    }
+
+    .magic-button:hover {
+      background: rgba(10, 10, 15, 0.95); /* Keeps inner fill identical on hover, letting container handle animation/scale */
     }
     
     .magic-button:active {
       cursor: grabbing;
+      transform: scale(0.98);
     }
 
-    @keyframes pulse {
-      0% { filter: blur(25px); opacity: 0.6; transform: translate(-50%, -50%) scale(0.95); }
-      100% { filter: blur(45px); opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    /* Discreet Expandable Instructions Accordion */
+    .accordion {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 28px;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      transition: background 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    @media (max-width: 600px) {
-      .magic-button {
-        font-size: 1.2rem;
-        padding: 14px 32px;
+    .accordion:hover {
+      background: var(--glass-hover);
+    }
+
+    /* Discreet Header */
+    .accordion-header {
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      background: transparent;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: color 0.2s ease;
+    }
+
+    .accordion-header:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Subtle Arrow icon */
+    .arrow {
+      width: 12px;
+      height: 12px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      flex-shrink: 0;
+    }
+
+    .accordion.active .arrow {
+      transform: rotate(180deg);
+    }
+
+    /* Accordion Content */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease;
+      padding: 0 clamp(20px, 4vw, 24px);
+    }
+
+    .accordion.active .accordion-content {
+      max-height: 400px;
+      padding-bottom: clamp(20px, 4vw, 24px);
+    }
+
+    /* Steps List */
+    .steps {
+      text-align: left;
+      margin: 0;
+      padding: 0;
+      color: var(--text-main);
+      font-size: clamp(0.85rem, 2.2vw, 0.92rem);
+      line-height: 1.6;
+      list-style: none;
+    }
+
+    .steps li {
+      position: relative;
+      margin-bottom: 14px;
+      padding-left: 32px;
+    }
+
+    .steps li:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Dynamic Step Icons via Data-URIs */
+    .steps li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 2px;
+      width: 18px;
+      height: 18px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    /* Step 1: Keyboard Icon */
+    .steps li:nth-child(1)::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10'/%3E%3C/svg%3E");
+    }
+
+    /* Step 2: Cursor/Hold Icon */
+    .steps li:nth-child(2)::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%2306b6d4'/%3E%3C/svg%3E");
+    }
+
+    /* Step 3: Safari-style Bookmark Icon */
+    .steps li:nth-child(3)::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'/%3E%3C/svg%3E");
+    }
+
+    /* Step 4: Play/Action Icon */
+    .steps li:nth-child(4)::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='10 8 16 12 10 16 10 8' fill='%2306b6d4'/%3E%3C/svg%3E");
+    }
+
+    .steps strong {
+      color: var(--text-main);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        justify-content: flex-start;
+        padding-top: 10vh;
       }
     }
   </style>
 </head>
 <body>
 
-  <div class="button-container">
-    <a href="javascript:(function(){const mainContainer=document.querySelector('#PrintRosterDiv-ModalBody');if(!mainContainer){alert('Error: Could not find the roster container on this page.');return;}const cloned=mainContainer.cloneNode(true);const svg=cloned.querySelector('#SVGContainer');if(svg)svg.remove();const styles=cloned.querySelectorAll('style');styles.forEach(s=>s.remove());const rawText=cloned.innerText.split('\n').filter(l=>l.trim()!=='').join('\n');const overlay=document.createElement('div');overlay.id='rostercal-magic-overlay';overlay.style.cssText='position:fixed;inset:0;background:rgba(3,7,18,0.85);backdrop-filter:blur(10px);z-index:999998;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s;';const iframe=document.createElement('iframe');iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='width:95vw;height:90vh;max-width:1200px;border:1px solid rgba(51,65,85,0.6);border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);background:#030712;z-index:999999;';const close=document.createElement('button');close.innerHTML='✕ Close';close.style.cssText='position:absolute;top:20px;right:5vw;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;font-weight:bold;padding:8px 16px;border-radius:20px;cursor:pointer;z-index:1000000;backdrop-filter:blur(5px);';close.onclick=()=>overlay.remove();overlay.appendChild(iframe);overlay.appendChild(close);document.body.appendChild(overlay);iframe.onload=()=>{iframe.contentWindow.postMessage({type:'ROSTER_DATA',text:rawText},'*');};})();" class="magic-button">Magic Roster</a>
+  <!-- Dynamic Organic Gradient Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="content-wrapper">
+    <!-- Drag-and-Drop Action Button with Animated Greenish-Bluish Border -->
+    <div class="button-container">
+      <a href="javascript:(function(){const mainContainer=document.querySelector('#PrintRosterDiv-ModalBody');if(!mainContainer){alert('Error: Could not find the roster container on this page.');return;}const cloned=mainContainer.cloneNode(true);const svg=cloned.querySelector('#SVGContainer');if(svg)svg.remove();const styles=cloned.querySelectorAll('style');styles.forEach(s=>s.nodeType===1&&s.remove());const rawText=cloned.innerText.split('\n').filter(l=>l.trim()!=='').join('\n');const overlay=document.createElement('div');overlay.id='rostercal-magic-overlay';overlay.style.cssText='position:fixed;inset:0;background:rgba(3,7,18,0.85);backdrop-filter:blur(10px);z-index:999998;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s;';const iframe=document.createElement('iframe');iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='width:95vw;height:90vh;max-width:1200px;border:1px solid rgba(51,65,85,0.6);border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);background:#030712;z-index:999999;';const close=document.createElement('button');close.innerHTML='✕ Close';close.style.cssText='position:absolute;top:20px;right:5vw;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;font-weight:bold;padding:8px 16px;border-radius:20px;cursor:pointer;z-index:1000000;backdrop-filter:blur(5px);';close.onclick=()=>overlay.remove();overlay.appendChild(iframe);overlay.appendChild(close);document.body.appendChild(overlay);iframe.onload=()=>{iframe.contentWindow.postMessage({type:'ROSTER_DATA',text:rawText},'*');};})();" class="magic-button">
+        🪄 Magic Roster
+      </a>
+    </div>
+
+    <!-- Discreet Expandable Instructions Accordion -->
+    <div class="accordion" id="instructionAccordion">
+      <button class="accordion-header" onclick="toggleAccordion()">
+        <span>Instructions</span>
+        <div class="arrow"></div>
+      </button>
+      <div class="accordion-content">
+        <ul class="steps">
+          <li>Make sure your bookmarks bar is visible (Press <strong>Ctrl + Shift + B</strong> on Windows or <strong>Cmd + Shift + B</strong> on Mac).</li>
+          <li>Click and <strong>hold</strong> the button above with your mouse.</li>
+          <li><strong>Drag</strong> it straight up into your bookmarks bar and release!</li>
+          <li>Once added, just open your roster page and click your new bookmark!</li>
+        </ul>
+      </div>
+    </div>
   </div>
+
+  <script>
+    function toggleAccordion() {
+      const accordion = document.getElementById('instructionAccordion');
+      accordion.classList.toggle('active');
+    }
+
+    // Random Organic Flowing Background Animation
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const orbs = [
+      { x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, radius: 450, color: 'rgba(6, 182, 212, 0.22)' },
+      { x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, radius: 500, color: 'rgba(15, 23, 42, 0.9)' },
+      { x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, radius: 350, color: 'rgba(16, 185, 129, 0.2)' }
+    ];
+
+    function animate() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      orbs.forEach(orb => {
+        orb.x += orb.vx;
+        orb.y += orb.vy;
+
+        if (orb.x < -100 || orb.x > canvas.width + 100) {
+          orb.vx *= -1;
+          orb.vx += (Math.random() - 0.5) * 0.2;
+        }
+        if (orb.y < -100 || orb.y > canvas.height + 100) {
+          orb.vy *= -1;
+          orb.vy += (Math.random() - 0.5) * 0.2;
+        }
+
+        const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
+        gradient.addColorStop(0, orb.color);
+        gradient.addColorStop(1, 'transparent');
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
 
 </body>
 </html>
