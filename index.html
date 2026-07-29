@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- Viewport-fit=cover ensures it extends into the notch/safe areas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <!-- iOS specific tags for full-screen web app behavior -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Magic Roster Bookmarklet</title>
 
   <style>
@@ -12,31 +16,26 @@
       --text-main: #ffffff;
     }
 
-    body {
+    /* Target both HTML and Body to ensure no white/black bars on top/bottom scroll */
+    html, body {
       background-color: #000000;
       margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      box-sizing: border-box;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Prevents bouncing and scrolling revealing gaps */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
-      overflow: hidden;
       position: relative;
     }
 
     /* Canvas for organic, randomly drifting gradient orbs */
     #bg-canvas {
-      position: fixed;
+      position: absolute; /* absolute to HTML document */
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
+      width: 100%;
+      height: 100%;
       z-index: -1;
       pointer-events: none;
     }
@@ -295,10 +294,12 @@
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
+      // Set to innerWidth/innerHeight which accounts for screen bounds on mobile
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resizeCanvas);
+    // Call initially
     resizeCanvas();
 
     const orbs = [
