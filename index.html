@@ -2,32 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Viewport-fit=cover ensures it extends into the notch/safe areas -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <!-- iOS specific tags for full-screen web app behavior -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Magic Roster Bookmarklet</title>
+  <title>Magic Roster</title>
 
   <style>
     :root {
       --text-main: #ffffff;
     }
 
-    /* Target both HTML and Body to ensure no white/black bars on top/bottom scroll */
     html, body {
       background-color: #000000;
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      overflow: hidden; /* Prevents bouncing and scrolling revealing gaps */
+      overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       position: relative;
     }
 
-    /* Responsive Main Wrapper */
     .content-wrapper {
       text-align: center;
       max-width: 480px;
@@ -35,7 +31,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: clamp(16px, 3vh, 24px); /* Slightly reduced gap since the box is gone */
+      gap: clamp(16px, 3vh, 24px);
       z-index: 1;
       position: absolute;
       top: 50%;
@@ -45,14 +41,13 @@
       box-sizing: border-box;
     }
 
-    /* Button Container with Animated Greenish-Bluish Border Motion */
     .button-container {
       position: relative;
       display: inline-block;
       width: fit-content;
       max-width: 100%;
       border-radius: 36px;
-      padding: 2px; /* Space for the animated border */
+      padding: 2px;
       background: linear-gradient(60deg, #06b6d4, #10b981, #3b82f6, #06b6d4);
       background-size: 300% 300%;
       animation: borderMotion 4s ease infinite;
@@ -65,18 +60,11 @@
     }
 
     @keyframes borderMotion {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
-    /* Magic Roster Interactive Button */
     .magic-button {
       position: relative;
       z-index: 1;
@@ -113,7 +101,6 @@
       transform: scale(0.98);
     }
 
-    /* Expandable Instructions Accordion (No Box) */
     .accordion {
       width: fit-content;
       max-width: 100%;
@@ -121,7 +108,6 @@
       overflow: hidden;
     }
 
-    /* Discreet Header */
     .accordion-header {
       padding: 12px 22px;
       display: flex;
@@ -145,7 +131,6 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
-    /* Subtle Arrow icon */
     .arrow {
       width: 12px;
       height: 12px;
@@ -160,7 +145,6 @@
       transform: rotate(180deg);
     }
 
-    /* Accordion Content */
     .accordion-content {
       max-height: 0;
       overflow: hidden;
@@ -170,13 +154,12 @@
     }
 
     .accordion.active .accordion-content {
-      max-height: 600px; /* Increased to fit the new instructions */
+      max-height: 600px;
       padding-bottom: clamp(18px, 3.5vw, 22px);
       opacity: 1;
       overflow-y: auto;
     }
 
-    /* OS Section Titles */
     .os-title {
       color: rgba(255, 255, 255, 0.7);
       font-size: 0.75rem;
@@ -191,7 +174,6 @@
       margin-top: 0;
     }
 
-    /* Steps List */
     .steps {
       text-align: left;
       margin: 0 0 16px 0;
@@ -216,7 +198,6 @@
       margin-bottom: 0;
     }
 
-    /* Dynamic Step Icons via Data-URIs */
     .steps li::before {
       content: '';
       position: absolute;
@@ -229,7 +210,6 @@
       background-position: center;
     }
 
-    /* Icon Classes */
     .icon-keyboard::before {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10'/%3E%3C/svg%3E");
     }
@@ -245,19 +225,53 @@
     .steps strong {
       color: var(--text-main);
     }
+
+    .external-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px;
+      color: #06b6d4;
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .external-arrow:hover {
+      color: #38bdf8;
+      transform: scale(1.15);
+    }
+
+    .external-arrow svg {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .footer-signature {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
 
   <div class="content-wrapper">
-    <!-- Drag-and-Drop Action Button with Animated Greenish-Bluish Border -->
     <div class="button-container">
       <a href="javascript:(function(){const mainContainer=document.querySelector('#PrintRosterDiv-ModalBody');if(!mainContainer){alert('Error: Could not find the roster container on this page.');return;}const cloned=mainContainer.cloneNode(true);const svg=cloned.querySelector('#SVGContainer');if(svg)svg.remove();const styles=cloned.querySelectorAll('style');styles.forEach(s=>s.nodeType===1&&s.remove());const rawText=cloned.innerText.split('\n').filter(l=>l.trim()!=='').join('\n');const overlay=document.createElement('div');overlay.id='rostercal-magic-overlay';overlay.style.cssText='position:fixed;inset:0;background:rgba(3,7,18,0.85);backdrop-filter:blur(10px);z-index:999998;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s;';const iframe=document.createElement('iframe');iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='width:95vw;height:90vh;max-width:1200px;border:1px solid rgba(51,65,85,0.6);border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);background:#030712;z-index:999999;';const close=document.createElement('button');close.innerHTML='✕ Close';close.style.cssText='position:absolute;top:20px;right:5vw;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;font-weight:bold;padding:8px 16px;border-radius:20px;cursor:pointer;z-index:1000000;backdrop-filter:blur(5px);';close.onclick=()=>overlay.remove();overlay.appendChild(iframe);overlay.appendChild(close);document.body.appendChild(overlay);iframe.onload=()=>{iframe.contentWindow.postMessage({type:'ROSTER_DATA',text:rawText},'*');};})();" class="magic-button">
         🪄 Magic Roster
       </a>
     </div>
 
-    <!-- Expandable Instructions Accordion -->
     <div class="accordion" id="instructionAccordion">
       <button class="accordion-header" onclick="toggleAccordion()">
         <span>Instructions</span>
@@ -267,7 +281,7 @@
         
         <div class="os-title">Desktop Installation</div>
         <ul class="steps">
-          <li class="icon-keyboard">Show bookmarks bar: <strong>Cmd+Shift+B</strong> (Mac) or <strong>Ctrl+Shift+B</strong> (Win).</li>
+          <li class="icon-keyboard">Show bookmarks bar: <strong>Cmd+Shift+B</strong> (Mac) or <span>Ctrl+Shift+B</span> (Win).</li>
           <li class="icon-drag"><strong>Drag and drop</strong> the button above into your bookmarks bar.</li>
         </ul>
 
@@ -278,7 +292,12 @@
 
         <div class="os-title">How To Use</div>
         <ul class="steps">
-          <li class="icon-play">Open <strong>Crew Portal</strong>.</li>
+          <li class="icon-play">
+            Open Crew Portal 
+            <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer" class="external-arrow" title="Open Crew Portal">
+              <svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            </a>
+          </li>
           <li class="icon-play">Click <strong>Roster & Apps</strong> (left hand side of the page).</li>
           <li class="icon-play">Click <strong>Print/email</strong> (top right hand side of the page).</li>
           <li class="icon-play">Click the <strong>Magic Roster</strong> bookmark (previously saved).</li>
@@ -287,6 +306,8 @@
       </div>
     </div>
   </div>
+
+  <div class="footer-signature">Made with ❤️ by Adrià</div>
 
   <script>
     function toggleAccordion() {
