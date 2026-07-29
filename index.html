@@ -11,8 +11,6 @@
 
   <style>
     :root {
-      --glass-bg: rgba(18, 18, 22, 0.55);
-      --glass-hover: rgba(28, 28, 35, 0.65);
       --text-main: #ffffff;
     }
 
@@ -29,17 +27,6 @@
       position: relative;
     }
 
-    /* Canvas for organic, randomly drifting gradient orbs */
-    #bg-canvas {
-      position: absolute; /* absolute to HTML document */
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      pointer-events: none;
-    }
-
     /* Responsive Main Wrapper */
     .content-wrapper {
       text-align: center;
@@ -48,7 +35,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: clamp(20px, 4vh, 36px);
+      gap: clamp(16px, 3vh, 24px); /* Slightly reduced gap since the box is gone */
       z-index: 1;
       position: absolute;
       top: 50%;
@@ -61,8 +48,9 @@
     /* Button Container with Animated Greenish-Bluish Border Motion */
     .button-container {
       position: relative;
-      display: block;
-      width: 100%;
+      display: inline-block;
+      width: fit-content;
+      max-width: 100%;
       border-radius: 36px;
       padding: 2px; /* Space for the animated border */
       background: linear-gradient(60deg, #06b6d4, #10b981, #3b82f6, #06b6d4);
@@ -96,7 +84,8 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      width: 100%;
+      width: max-content;
+      max-width: 100%;
       box-sizing: border-box;
       background: rgba(10, 10, 15, 0.95);
       backdrop-filter: blur(20px);
@@ -124,27 +113,17 @@
       transform: scale(0.98);
     }
 
-    /* Discreet Expandable Instructions Accordion */
+    /* Expandable Instructions Accordion (No Box) */
     .accordion {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 36px;
-      width: 100%;
+      width: fit-content;
+      max-width: 100%;
       box-sizing: border-box;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       overflow: hidden;
-      transition: background 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .accordion:hover {
-      background: var(--glass-hover);
     }
 
     /* Discreet Header */
     .accordion-header {
-      padding: clamp(18px, 4vw, 26px) 22px;
+      padding: 12px 22px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -159,6 +138,7 @@
       width: 100%;
       box-sizing: border-box;
       transition: color 0.2s ease;
+      outline: none;
     }
 
     .accordion-header:hover {
@@ -184,25 +164,46 @@
     .accordion-content {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease;
-      padding: 0 clamp(20px, 4vw, 24px);
+      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s ease, opacity 0.5s ease;
+      padding: 0 clamp(16px, 4vw, 24px);
+      opacity: 0;
     }
 
     .accordion.active .accordion-content {
-      max-height: 350px;
+      max-height: 400px;
       padding-bottom: clamp(18px, 3.5vw, 22px);
+      opacity: 1;
       overflow-y: auto;
+    }
+
+    /* OS Section Titles */
+    .os-title {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 16px 0 10px 0;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .os-title:first-child {
+      margin-top: 0;
     }
 
     /* Steps List */
     .steps {
       text-align: left;
-      margin: 0;
+      margin: 0 0 16px 0;
       padding: 0;
       color: var(--text-main);
       font-size: clamp(0.8rem, 2vw, 0.9rem);
       line-height: 1.5;
       list-style: none;
+    }
+    
+    .steps:last-child {
+      margin-bottom: 0;
     }
 
     .steps li {
@@ -228,24 +229,17 @@
       background-position: center;
     }
 
-    /* Step 1: Keyboard Icon */
-    .steps li:nth-child(1)::before {
+    /* Icon Classes */
+    .icon-keyboard::before {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10'/%3E%3C/svg%3E");
     }
 
-    /* Step 2: Cursor/Hold Icon */
-    .steps li:nth-child(2)::before {
+    .icon-drag::before {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%2306b6d4'/%3E%3C/svg%3E");
     }
 
-    /* Step 3: Safari-style Bookmark Icon */
-    .steps li:nth-child(3)::before {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'/%3E%3C/svg%3E");
-    }
-
-    /* Step 4: Play/Action Icon */
-    .steps li:nth-child(4)::before {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='10 8 16 12 10 16 10 8' fill='%2306b6d4'/%3E%3C/svg%3E");
+    .icon-play::before {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='10 8 16 12 10 16 10 8' fill='%2310b981'/%3E%3C/svg%3E");
     }
 
     .steps strong {
@@ -255,30 +249,35 @@
 </head>
 <body>
 
-  <!-- Dynamic Organic Gradient Canvas -->
-  <canvas id="bg-canvas"></canvas>
-
   <div class="content-wrapper">
     <!-- Drag-and-Drop Action Button with Animated Greenish-Bluish Border -->
     <div class="button-container">
       <a href="javascript:(function(){const mainContainer=document.querySelector('#PrintRosterDiv-ModalBody');if(!mainContainer){alert('Error: Could not find the roster container on this page.');return;}const cloned=mainContainer.cloneNode(true);const svg=cloned.querySelector('#SVGContainer');if(svg)svg.remove();const styles=cloned.querySelectorAll('style');styles.forEach(s=>s.nodeType===1&&s.remove());const rawText=cloned.innerText.split('\n').filter(l=>l.trim()!=='').join('\n');const overlay=document.createElement('div');overlay.id='rostercal-magic-overlay';overlay.style.cssText='position:fixed;inset:0;background:rgba(3,7,18,0.85);backdrop-filter:blur(10px);z-index:999998;display:flex;align-items:center;justify-content:center;transition:opacity 0.3s;';const iframe=document.createElement('iframe');iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='width:95vw;height:90vh;max-width:1200px;border:1px solid rgba(51,65,85,0.6);border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);background:#030712;z-index:999999;';const close=document.createElement('button');close.innerHTML='✕ Close';close.style.cssText='position:absolute;top:20px;right:5vw;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:14px;font-weight:bold;padding:8px 16px;border-radius:20px;cursor:pointer;z-index:1000000;backdrop-filter:blur(5px);';close.onclick=()=>overlay.remove();overlay.appendChild(iframe);overlay.appendChild(close);document.body.appendChild(overlay);iframe.onload=()=>{iframe.contentWindow.postMessage({type:'ROSTER_DATA',text:rawText},'*');};})();" class="magic-button">
-        ✨ Magic Roster
+        🪄 Magic Roster
       </a>
     </div>
 
-    <!-- Discreet Expandable Instructions Accordion -->
+    <!-- Expandable Instructions Accordion -->
     <div class="accordion" id="instructionAccordion">
       <button class="accordion-header" onclick="toggleAccordion()">
         <span>Instructions</span>
         <div class="arrow"></div>
       </button>
       <div class="accordion-content">
+        
+        <div class="os-title">Desktop (Mac & Windows)</div>
         <ul class="steps">
-          <li>Make sure your bookmarks bar is visible (Press <strong>Ctrl + Shift + B</strong> on Windows or <strong>Cmd + Shift + B</strong> on Mac).</li>
-          <li>Click and <strong>hold</strong> the button above with your mouse.</li>
-          <li><strong>Drag</strong> it straight up into your bookmarks bar and release!</li>
-          <li>Once added, just open your roster page and click your new bookmark!</li>
+          <li class="icon-keyboard">Show bookmarks bar: <strong>Cmd+Shift+B</strong> (Mac) or <strong>Ctrl+Shift+B</strong> (Win).</li>
+          <li class="icon-drag"><strong>Drag and drop</strong> the button above into your bookmarks bar.</li>
+          <li class="icon-play">Open your roster page and click the new bookmark!</li>
         </ul>
+
+        <div class="os-title">Mobile (iOS & Android)</div>
+        <ul class="steps">
+          <li class="icon-drag"><strong>Drag and drop</strong> the button above directly into your bookmarks or favorites.</li>
+          <li class="icon-play">Open your roster page and tap your new bookmark!</li>
+        </ul>
+
       </div>
     </div>
   </div>
@@ -288,57 +287,6 @@
       const accordion = document.getElementById('instructionAccordion');
       accordion.classList.toggle('active');
     }
-
-    // Random Organic Flowing Background Animation
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      // Set to innerWidth/innerHeight which accounts for screen bounds on mobile
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    // Call initially
-    resizeCanvas();
-
-    const orbs = [
-      { x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, radius: 450, color: 'rgba(6, 182, 212, 0.22)' },
-      { x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, radius: 500, color: 'rgba(15, 23, 42, 0.9)' },
-      { x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, radius: 350, color: 'rgba(16, 185, 129, 0.2)' }
-    ];
-
-    function animate() {
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      orbs.forEach(orb => {
-        orb.x += orb.vx;
-        orb.y += orb.vy;
-
-        if (orb.x < -100 || orb.x > canvas.width + 100) {
-          orb.vx *= -1;
-          orb.vx += (Math.random() - 0.5) * 0.2;
-        }
-        if (orb.y < -100 || orb.y > canvas.height + 100) {
-          orb.vy *= -1;
-          orb.vy += (Math.random() - 0.5) * 0.2;
-        }
-
-        const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
-        gradient.addColorStop(0, orb.color);
-        gradient.addColorStop(1, 'transparent');
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      requestAnimationFrame(animate);
-    }
-
-    animate();
   </script>
 
 </body>
