@@ -267,7 +267,7 @@
 
   <div class="content-wrapper">
     <div class="button-container">
-      <a draggable="true" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button">
+      <a draggable="true" href="javascript:(function()%7Bfunction%20launchMagicUI(text)%7Bconst%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:text%7D,'*');%7D;%7Dconst%20currentHost=window.location.hostname;if(currentHost.includes('eswap.emirates.group'))%7BlaunchMagicUI(document.body.innerText);%7Delse%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');let%20portalText='';if(mainContainer)%7Bconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());portalText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');%7Delse%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20eSwapFrame=document.createElement('iframe');eSwapFrame.src='https://eswap.emirates.group/';eSwapFrame.style.cssText='width:0;height:0;border:none;position:absolute;visibility:hidden;';document.body.appendChild(eSwapFrame);let%20eSwapText='';let%20frameProcessed=false;const%20processFrame=()%3E%7Bif(frameProcessed)return;frameProcessed=true;try%7BeSwapText=eSwapFrame.contentDocument.body.innerText;%7Dcatch(e)%7Bconsole.warn('RosterCal:%20Background%20eSwap%20extraction%20blocked%20by%20SOP.',e);%7DeSwapFrame.remove();launchMagicUI(portalText+'%5Cn%5Cn---ESWAP---%5Cn%5Cn'+eSwapText);%7D;eSwapFrame.onload=processFrame;setTimeout(processFrame,4000);%7D%7D)();" class="magic-button">
         🪄 Magic Roster
       </a>
     </div>
@@ -293,14 +293,13 @@
         <div class="os-title">How To Use</div>
         <ul class="steps">
           <li class="icon-play">
-            Open Crew Portal 
+            Open the Crew Portal OR the eSwap Portal
             <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer" class="external-arrow" title="Open Crew Portal">
               <svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
             </a>
           </li>
-          <li class="icon-play">Click <strong>Roster & Apps</strong> (left hand side of the page).</li>
-          <li class="icon-play">Click <strong>Print/email</strong> (top right hand side of the page).</li>
-          <li class="icon-play">Click the <strong>Magic Roster</strong> bookmark (previously saved).</li>
+          <li class="icon-play">Navigate to your Roster grid view.</li>
+          <li class="icon-play">Click the <strong>Magic Roster</strong> bookmark you saved. (If viewing on the main portal, it will silently grab your eSwap data in the background).</li>
         </ul>
 
       </div>
