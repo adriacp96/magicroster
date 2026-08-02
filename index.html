@@ -87,7 +87,6 @@
       border-radius: 34px;
       border: none;
       user-select: none;
-      -webkit-user-drag: element;
       cursor: grab;
       transition: background 0.3s ease;
     }
@@ -313,6 +312,15 @@
     function toggleAccordion() {
       const accordion = document.getElementById('instructionAccordion');
       accordion.classList.toggle('active');
+    }
+
+    // Ensures drag-and-drop bookmarklet compatibility with Edge & Chromium
+    const magicBtn = document.querySelector('.magic-button');
+    if (magicBtn) {
+      magicBtn.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/uri-list', magicBtn.href);
+        e.dataTransfer.setData('text/plain', magicBtn.href);
+      });
     }
   </script>
 
