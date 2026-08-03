@@ -5,15 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Magic Roster - Drag and drop bookmarklet for Crew Portal">
   <title>Magic Roster</title>
 
   <style>
     :root {
       --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.6);
+      --text-muted-hover: rgba(255, 255, 255, 0.9);
+      --bg-body: #000000;
+      --bg-glass: rgba(10, 10, 15, 0.95);
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-blue: #3b82f6;
+      --transition-speed: 0.3s;
     }
 
     html, body {
-      background-color: #000000;
+      background-color: var(--bg-body);
       margin: 0;
       padding: 0;
       width: 100%;
@@ -41,6 +50,7 @@
       box-sizing: border-box;
     }
 
+    /* Button Styling */
     .button-container {
       position: relative;
       display: inline-block;
@@ -48,7 +58,7 @@
       max-width: 100%;
       border-radius: 36px;
       padding: 2px;
-      background: linear-gradient(60deg, #06b6d4, #10b981, #3b82f6, #06b6d4);
+      background: linear-gradient(60deg, var(--accent-cyan), var(--accent-green), var(--accent-blue), var(--accent-cyan));
       background-size: 300% 300%;
       animation: borderMotion 4s ease infinite;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -75,24 +85,24 @@
       width: max-content;
       max-width: 100%;
       box-sizing: border-box;
-      background: rgba(10, 10, 15, 0.95);
+      background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       color: var(--text-main);
       font-size: clamp(1rem, 2.5vw, 1.1rem);
       font-weight: 600;
-      text-align: center;
       text-decoration: none;
       padding: clamp(18px, 4vw, 26px) clamp(22px, 4.5vw, 28px);
       border-radius: 34px;
       border: none;
       user-select: none;
       cursor: grab;
-      transition: background 0.3s ease;
+      transition: background var(--transition-speed) ease, transform 0.1s ease;
     }
 
-    .magic-button:hover {
-      background: rgba(10, 10, 15, 0.95);
+    .magic-button:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 4px;
     }
     
     .magic-button:active {
@@ -100,6 +110,7 @@
       transform: scale(0.98);
     }
 
+    /* Accordion Styling */
     .accordion {
       width: fit-content;
       max-width: 100%;
@@ -113,7 +124,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-muted);
       font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
@@ -126,14 +137,20 @@
       outline: none;
     }
 
-    .accordion-header:hover {
-      color: rgba(255, 255, 255, 0.9);
+    .accordion-header:hover,
+    .accordion-header:focus-visible {
+      color: var(--text-muted-hover);
+    }
+
+    .accordion-header:focus-visible {
+      outline: 2px solid var(--text-muted);
+      border-radius: 4px;
     }
 
     .arrow {
       width: 12px;
       height: 12px;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
       background-size: contain;
       background-repeat: no-repeat;
@@ -150,15 +167,18 @@
       transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s ease, opacity 0.5s ease;
       padding: 0 clamp(16px, 4vw, 24px);
       opacity: 0;
+      visibility: hidden;
     }
 
     .accordion.active .accordion-content {
       max-height: 600px;
       padding-bottom: clamp(18px, 3.5vw, 22px);
       opacity: 1;
+      visibility: visible;
       overflow-y: auto;
     }
 
+    /* List & Typography */
     .os-title {
       color: rgba(255, 255, 255, 0.7);
       font-size: 0.75rem;
@@ -209,17 +229,10 @@
       background-position: center;
     }
 
-    .icon-keyboard::before {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10'/%3E%3C/svg%3E");
-    }
-
-    .icon-drag::before {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%2306b6d4'/%3E%3C/svg%3E");
-    }
-
-    .icon-play::before {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='10 8 16 12 10 16 10 8' fill='%2310b981'/%3E%3C/svg%3E");
-    }
+    /* SVG Icons encoded as background images */
+    .icon-keyboard::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10'/%3E%3C/svg%3E"); }
+    .icon-drag::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306b6d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%2306b6d4'/%3E%3C/svg%3E"); }
+    .icon-play::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolygon points='10 8 16 12 10 16 10 8' fill='%2310b981'/%3E%3C/svg%3E"); }
 
     .steps strong {
       color: var(--text-main);
@@ -230,14 +243,16 @@
       align-items: center;
       justify-content: center;
       margin-left: 4px;
-      color: #06b6d4;
+      color: var(--accent-cyan);
       text-decoration: none;
       transition: color 0.2s ease, transform 0.2s ease;
     }
 
-    .external-arrow:hover {
+    .external-arrow:hover,
+    .external-arrow:focus-visible {
       color: #38bdf8;
       transform: scale(1.15);
+      outline: none;
     }
 
     .external-arrow svg {
@@ -264,37 +279,38 @@
 </head>
 <body>
 
-  <div class="content-wrapper">
+  <main class="content-wrapper">
     <div class="button-container">
-      <a draggable="true" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button">
+      <a draggable="true" id="bookmarkletBtn" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button" aria-label="Drag this Magic Roster button to your bookmarks bar">
         🪄 Magic Roster
       </a>
     </div>
 
-    <div class="accordion" id="instructionAccordion">
-      <button class="accordion-header" onclick="toggleAccordion()">
+    <section class="accordion" id="instructionAccordion">
+      <button class="accordion-header" id="accordionToggleBtn" aria-expanded="false" aria-controls="accordionContent">
         <span>Instructions</span>
-        <div class="arrow"></div>
+        <div class="arrow" aria-hidden="true"></div>
       </button>
-      <div class="accordion-content">
+      
+      <div class="accordion-content" id="accordionContent" role="region" aria-labelledby="accordionToggleBtn">
         
-        <div class="os-title">Desktop Installation</div>
+        <h2 class="os-title">Desktop Installation</h2>
         <ul class="steps">
           <li class="icon-keyboard">Show bookmarks bar: <strong>Cmd+Shift+B</strong> (Mac) or <span>Ctrl+Shift+B</span> (Win).</li>
           <li class="icon-drag"><strong>Drag and drop</strong> the button above into your bookmarks bar.</li>
         </ul>
 
-        <div class="os-title">Mobile Installation</div>
+        <h2 class="os-title">Mobile Installation</h2>
         <ul class="steps">
           <li class="icon-drag"><strong>Drag and drop</strong> the button above directly into your bookmarks or favorites.</li>
         </ul>
 
-        <div class="os-title">How To Use</div>
+        <h2 class="os-title">How To Use</h2>
         <ul class="steps">
           <li class="icon-play">
             Open Crew Portal 
-            <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer" class="external-arrow" title="Open Crew Portal">
-              <svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+            <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer" class="external-arrow" aria-label="Open Crew Portal in new tab" title="Open Crew Portal">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
             </a>
           </li>
           <li class="icon-play">Click <strong>Roster & Apps</strong> (left hand side of the page).</li>
@@ -303,25 +319,33 @@
         </ul>
 
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
-  <div class="footer-signature">Made with ❤️ by Adrià</div>
+  <footer class="footer-signature">Made with ❤️ by Adrià</footer>
 
   <script>
-    function toggleAccordion() {
-      const accordion = document.getElementById('instructionAccordion');
-      accordion.classList.toggle('active');
-    }
-
-    // Ensures drag-and-drop bookmarklet compatibility with Edge & Chromium
-    const magicBtn = document.querySelector('.magic-button');
-    if (magicBtn) {
-      magicBtn.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/uri-list', magicBtn.href);
-        e.dataTransfer.setData('text/plain', magicBtn.href);
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // Accordion Toggle Logic
+      const accordionBtn = document.getElementById('accordionToggleBtn');
+      const accordionContainer = document.getElementById('instructionAccordion');
+      
+      accordionBtn.addEventListener('click', () => {
+        const isActive = accordionContainer.classList.toggle('active');
+        accordionBtn.setAttribute('aria-expanded', isActive);
       });
-    }
+
+      // Ensures drag-and-drop bookmarklet compatibility with Edge & Chromium
+      const magicBtn = document.getElementById('bookmarkletBtn');
+      if (magicBtn) {
+        magicBtn.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/uri-list', magicBtn.href);
+          e.dataTransfer.setData('text/plain', magicBtn.href);
+        });
+      }
+      
+    });
   </script>
 
 </body>
