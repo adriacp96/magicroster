@@ -303,9 +303,10 @@
 <body>
 
   <main class="content-wrapper">
-    <!-- Non-interactive, single-play background video placed directly on top of the button -->
+    <!-- Non-interactive, back-and-forth ping-pong looping background video -->
     <div class="bg-video-container" aria-hidden="true">
       <video
+        id="bgVideo"
         class="bg-video"
         src="rosty.mov"
         autoplay
@@ -378,6 +379,35 @@
           e.dataTransfer.setData('text/x-moz-url', magicBtn.href + '\n' + magicBtn.title);
           e.dataTransfer.setData('text/uri-list', magicBtn.href);
           e.dataTransfer.setData('text/plain', magicBtn.href);
+        });
+      }
+
+      /* Seamless ping-pong loop (forward -> reverse -> forward) */
+      const video = document.getElementById('bgVideo');
+      if (video) {
+        let isReversing = false;
+        let lastTime = performance.now();
+
+        const stepReverse = (now) => {
+          if (!isReversing) return;
+          const dt = (now - lastTime) / 1000;
+          lastTime = now;
+
+          if (video.currentTime <= 0.05) {
+            isReversing = false;
+            video.currentTime = 0;
+            video.play();
+          } else {
+            video.currentTime = Math.max(0, video.currentTime - dt);
+            requestAnimationFrame(stepReverse);
+          }
+        };
+
+        video.addEventListener('ended', () => {
+          isReversing = true;
+          video.pause();
+          lastTime = performance.now();
+          requestAnimationFrame(stepReverse);
         });
       }
       
