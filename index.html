@@ -8,7 +8,8 @@
   <meta name="description" content="Magic Roster - Drag and drop bookmarklet for Crew Portal">
   <title>🪄 Magic Roster</title>
 
-  <!-- Preload video asset immediately -->
+  <!-- Preload assets -->
+  <link rel="preload" href="rostybw.png" as="image">
   <link rel="preload" href="rosty.mov" as="video" type="video/quicktime">
 
   <!-- Favicon & Apple Touch Icon -->
@@ -74,30 +75,35 @@
       -webkit-user-select: none;
     }
 
-    /* Smooth linear ease-out slide up with zero bounce */
-    @keyframes smoothRise {
-      0% {
-        opacity: 0;
-        transform: translateY(28px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .bg-canvas {
+    /* Instant Black & White Placeholder */
+    .bg-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
+      z-index: 2;
+      opacity: 1;
+      transition: opacity 0.6s ease;
       pointer-events: none;
       -webkit-touch-callout: none;
-      opacity: 0;
-      transform-origin: bottom center;
     }
 
-    .bg-canvas.animate-rise {
-      animation: smoothRise 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .bg-placeholder.fade-out {
+      opacity: 0;
+    }
+
+    .bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 1;
+      pointer-events: none;
+      -webkit-touch-callout: none;
     }
 
     .bg-video {
@@ -333,8 +339,9 @@
 <body>
 
   <main class="content-wrapper">
-    <!-- Non-interactive, bounce-free ping-pong video canvas -->
+    <!-- Immediate B&W static frame fading smoothly into the dynamic ping-pong canvas -->
     <div class="bg-video-container" aria-hidden="true">
+      <img id="placeholderImg" src="rostybw.png" alt="" class="bg-placeholder">
       <canvas id="bgCanvas" class="bg-canvas" width="300" height="300"></canvas>
       <video
         id="bgVideo"
@@ -411,17 +418,19 @@
         });
       }
 
+      const placeholder = document.getElementById('placeholderImg');
       const video = document.getElementById('bgVideo');
       const canvas = document.getElementById('bgCanvas');
       const ctx = canvas.getContext('2d', { alpha: true });
       const frames = [];
       let isCapturing = true;
-      let hasAnimatedRise = false;
+      let hasFaded = false;
 
-      const triggerRise = () => {
-        if (!hasAnimatedRise) {
-          hasAnimatedRise = true;
-          canvas.classList.add('animate-rise');
+      const triggerFade = () => {
+        if (!hasFaded) {
+          hasFaded = true;
+          placeholder.classList.add('fade-out');
+          setTimeout(() => placeholder.remove(), 700);
         }
       };
 
@@ -434,7 +443,7 @@
 
         if (frames.length === 0) {
           ctx.drawImage(offscreen, 0, 0);
-          triggerRise();
+          triggerFade();
         }
         frames.push(offscreen);
       };
