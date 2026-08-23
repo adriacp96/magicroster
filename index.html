@@ -37,6 +37,28 @@
       position: relative;
     }
 
+    .top-video-container {
+      position: absolute;
+      top: 5vh;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .top-video {
+      width: clamp(90px, 16vw, 150px);
+      height: auto;
+      object-fit: contain;
+      pointer-events: none;
+      -webkit-touch-callout: none;
+    }
+
     .content-wrapper {
       text-align: center;
       max-width: 480px;
@@ -47,7 +69,7 @@
       gap: clamp(16px, 3vh, 24px);
       z-index: 1;
       position: absolute;
-      top: 50%;
+      top: 54%;
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 0 16px;
@@ -278,6 +300,20 @@
   </style>
 </head>
 <body>
+
+  <!-- Top Centered Video (Autoplays once, no controls, non-interactive) -->
+  <div class="top-video-container" aria-hidden="true">
+    <video
+      class="top-video"
+      src="rosty.mov"
+      autoplay
+      muted
+      playsinline
+      disablepictureinpicture
+      controlslist="nodownload nofullscreen noremoteplayback"
+      oncontextmenu="return false;">
+    </video>
+  </div>
 
   <main class="content-wrapper">
     <div class="button-container">
