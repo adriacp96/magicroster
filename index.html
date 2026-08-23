@@ -12,7 +12,7 @@
   <link rel="preload" href="rosty.mov" as="video" type="video/quicktime">
 
   <!-- Favicon & Apple Touch Icon -->
-  <link rel="icon" type="image/png" href="rostyicon.png">
+  <link rel="icon" type="image/png" href="rosty.png">
   <link rel="apple-touch-icon" href="rostercalapp.png">
 
   <style>
@@ -57,22 +57,28 @@
       box-sizing: border-box;
     }
 
-    /* Fall-in entrance animation */
-    @keyframes dropBounce {
+    /* Heavy physics drop with squash and stretch on landing */
+    @keyframes hardFloorDrop {
       0% {
         opacity: 0;
-        transform: translateY(-160px) scale(0.85);
+        transform: translateY(-80vh) scale(0.9, 1.15);
       }
-      65% {
+      45% {
         opacity: 1;
-        transform: translateY(8px) scale(1.03);
+        transform: translateY(0) scale(1.35, 0.65); /* Heavy impact compression */
       }
-      85% {
-        transform: translateY(-4px) scale(0.98);
+      60% {
+        transform: translateY(-45px) scale(0.95, 1.05); /* First rebound up */
+      }
+      75% {
+        transform: translateY(0) scale(1.15, 0.85); /* Second impact */
+      }
+      88% {
+        transform: translateY(-12px) scale(0.98, 1.02); /* Tiny micro-bounce */
       }
       100% {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0) scale(1, 1); /* Settled */
       }
     }
 
@@ -87,10 +93,11 @@
       user-select: none;
       -webkit-user-select: none;
       opacity: 0;
+      transform-origin: bottom center;
     }
 
     .bg-video-container.animate-drop {
-      animation: dropBounce 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: hardFloorDrop 1.05s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
     .bg-canvas, .bg-video {
@@ -334,7 +341,7 @@
 <body>
 
   <main class="content-wrapper">
-    <!-- Fast-loading, dropping ping-pong video canvas -->
+    <!-- Floor-impact drop ping-pong canvas -->
     <div class="bg-video-container" id="videoContainer" aria-hidden="true">
       <canvas id="bgCanvas" class="bg-canvas"></canvas>
       <video
@@ -412,7 +419,6 @@
         });
       }
 
-      /* Instant Loading + Fall-in Drop Animation + Zero-Blackout Ping-Pong Loop */
       const video = document.getElementById('bgVideo');
       const canvas = document.getElementById('bgCanvas');
       const container = document.getElementById('videoContainer');
