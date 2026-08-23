@@ -8,6 +8,9 @@
   <meta name="description" content="Magic Roster - Drag and drop bookmarklet for Crew Portal">
   <title>🪄 Magic Roster</title>
 
+  <!-- Preload video asset immediately -->
+  <link rel="preload" href="rosty.mov" as="video" type="video/quicktime">
+
   <!-- Favicon & Apple Touch Icon -->
   <link rel="icon" type="image/png" href="rostyicon.png">
   <link rel="apple-touch-icon" href="rostercalapp.png">
@@ -54,6 +57,25 @@
       box-sizing: border-box;
     }
 
+    /* Fall-in entrance animation */
+    @keyframes dropBounce {
+      0% {
+        opacity: 0;
+        transform: translateY(-160px) scale(0.85);
+      }
+      65% {
+        opacity: 1;
+        transform: translateY(8px) scale(1.03);
+      }
+      85% {
+        transform: translateY(-4px) scale(0.98);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
     .bg-video-container {
       position: relative;
       z-index: 0;
@@ -64,6 +86,11 @@
       pointer-events: none;
       user-select: none;
       -webkit-user-select: none;
+      opacity: 0;
+    }
+
+    .bg-video-container.animate-drop {
+      animation: dropBounce 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .bg-canvas, .bg-video {
@@ -307,8 +334,8 @@
 <body>
 
   <main class="content-wrapper">
-    <!-- Seamless zero-blackout Ping-Pong Background Canvas -->
-    <div class="bg-video-container" aria-hidden="true">
+    <!-- Fast-loading, dropping ping-pong video canvas -->
+    <div class="bg-video-container" id="videoContainer" aria-hidden="true">
       <canvas id="bgCanvas" class="bg-canvas"></canvas>
       <video
         id="bgVideo"
@@ -385,15 +412,21 @@
         });
       }
 
-      /* Synchronous in-memory frame cache with zero-gap turnaround */
+      /* Instant Loading + Fall-in Drop Animation + Zero-Blackout Ping-Pong Loop */
       const video = document.getElementById('bgVideo');
       const canvas = document.getElementById('bgCanvas');
-      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('videoContainer');
+      const ctx = canvas.getContext('2d', { alpha: true });
       const frames = [];
       let isCapturing = true;
+      let hasAnimatedDrop = false;
 
-      // Detect frame-by-frame support
-      const hasRVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+      const triggerDrop = () => {
+        if (!hasAnimatedDrop) {
+          hasAnimatedDrop = true;
+          container.classList.add('animate-drop');
+        }
+      };
 
       const storeFrame = () => {
         const offscreen = document.createElement('canvas');
@@ -402,9 +435,9 @@
         const offCtx = offscreen.getContext('2d');
         offCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Immediate first-frame preview (avoids initial blank canvas)
         if (frames.length === 0) {
           ctx.drawImage(offscreen, 0, 0);
+          triggerDrop();
         }
         frames.push(offscreen);
       };
@@ -430,7 +463,6 @@
 
             frameIndex += direction * steps;
 
-            // Clamp and reverse without skipping index bounds
             if (frameIndex >= frames.length - 1) {
               frameIndex = frames.length - 1;
               direction = -1;
@@ -439,7 +471,6 @@
               direction = 1;
             }
 
-            // Direct in-place draw - no blank clear phase to eliminate blackouts
             ctx.drawImage(frames[frameIndex], 0, 0);
           }
 
@@ -448,6 +479,8 @@
 
         requestAnimationFrame(loop);
       };
+
+      const hasRVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
 
       const processCapture = () => {
         if (!isCapturing) return;
@@ -462,11 +495,17 @@
         }
       };
 
-      video.addEventListener('loadedmetadata', () => {
+      const initPlayback = () => {
         canvas.width = video.videoWidth || 300;
         canvas.height = video.videoHeight || 300;
         video.play().catch(() => {});
-      });
+      };
+
+      if (video.readyState >= 1) {
+        initPlayback();
+      } else {
+        video.addEventListener('loadedmetadata', initPlayback);
+      }
 
       video.addEventListener('play', () => {
         if (isCapturing) {
