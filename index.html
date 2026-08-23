@@ -66,12 +66,16 @@
       -webkit-user-select: none;
     }
 
-    .bg-video {
+    .bg-canvas, .bg-video {
       width: clamp(110px, 20vw, 170px);
       height: auto;
       object-fit: contain;
       pointer-events: none;
       -webkit-touch-callout: none;
+    }
+
+    .bg-video {
+      display: none;
     }
 
     .button-container {
@@ -303,23 +307,22 @@
 <body>
 
   <main class="content-wrapper">
-    <!-- Non-interactive, back-and-forth ping-pong looping background video -->
+    <!-- Smooth hardware-accelerated Canvas Ping-Pong Player -->
     <div class="bg-video-container" aria-hidden="true">
+      <canvas id="bgCanvas" class="bg-canvas"></canvas>
       <video
         id="bgVideo"
         class="bg-video"
         src="rosty.mov"
-        autoplay
         muted
         playsinline
-        disablepictureinpicture
-        controlslist="nodownload nofullscreen noremoteplayback"
-        oncontextmenu="return false;">
+        preload="auto"
+        disablepictureinpicture>
       </video>
     </div>
 
     <div class="button-container">
-      <a draggable="true" id="bookmarkletBtn" title="🪄 Magic Roster" aria-label="🪄 Magic Roster" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button">
+      <a draggable="true" id="bookmarkletBtn" title="🪄 Magic Roster" aria-label="🪄 Magic Roster" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button">
         🪄 Magic Roster
       </a>
     </div>
@@ -382,34 +385,75 @@
         });
       }
 
-      /* Seamless ping-pong loop (forward -> reverse -> forward) */
+      /* Seamless 60FPS ping-pong player without seek latency */
       const video = document.getElementById('bgVideo');
-      if (video) {
-        let isReversing = false;
-        let lastTime = performance.now();
+      const canvas = document.getElementById('bgCanvas');
+      const ctx = canvas.getContext('2d');
+      const frames = [];
+      let isCapturing = true;
 
-        const stepReverse = (now) => {
-          if (!isReversing) return;
-          const dt = (now - lastTime) / 1000;
-          lastTime = now;
+      video.addEventListener('loadedmetadata', () => {
+        canvas.width = video.videoWidth || 300;
+        canvas.height = video.videoHeight || 300;
+        video.play();
+      });
 
-          if (video.currentTime <= 0.05) {
-            isReversing = false;
-            video.currentTime = 0;
-            video.play();
-          } else {
-            video.currentTime = Math.max(0, video.currentTime - dt);
-            requestAnimationFrame(stepReverse);
+      const captureInitialPass = () => {
+        if (!isCapturing) return;
+        
+        if (!video.ended && !video.paused) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          createImageBitmap(canvas).then((bmp) => {
+            if (isCapturing) frames.push(bmp);
+          });
+          requestAnimationFrame(captureInitialPass);
+        }
+      };
+
+      video.addEventListener('play', () => {
+        if (isCapturing) requestAnimationFrame(captureInitialPass);
+      });
+
+      video.addEventListener('ended', () => {
+        isCapturing = false;
+        video.remove(); // Clean up original video element
+
+        if (frames.length === 0) return;
+
+        let frameIndex = frames.length - 1;
+        let direction = -1; // -1: reverse, 1: forward
+        const totalDuration = (video.duration || 2) * 1000;
+        const frameInterval = totalDuration / frames.length;
+        let lastTimestamp = performance.now();
+
+        const pingPongLoop = (now) => {
+          const delta = now - lastTimestamp;
+
+          if (delta >= frameInterval) {
+            const steps = Math.floor(delta / frameInterval);
+            lastTimestamp = now - (delta % frameInterval);
+
+            frameIndex += direction * steps;
+
+            if (frameIndex >= frames.length - 1) {
+              frameIndex = frames.length - 1;
+              direction = -1;
+            } else if (frameIndex <= 0) {
+              frameIndex = 0;
+              direction = 1;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(frames[frameIndex], 0, 0);
           }
+
+          requestAnimationFrame(pingPongLoop);
         };
 
-        video.addEventListener('ended', () => {
-          isReversing = true;
-          video.pause();
-          lastTime = performance.now();
-          requestAnimationFrame(stepReverse);
-        });
-      }
+        requestAnimationFrame(pingPongLoop);
+      });
       
     });
   </script>
