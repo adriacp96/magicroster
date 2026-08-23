@@ -307,7 +307,7 @@
 <body>
 
   <main class="content-wrapper">
-    <!-- Smooth hardware-accelerated Canvas Ping-Pong Player -->
+    <!-- Seamless zero-blackout Ping-Pong Background Canvas -->
     <div class="bg-video-container" aria-hidden="true">
       <canvas id="bgCanvas" class="bg-canvas"></canvas>
       <video
@@ -385,50 +385,43 @@
         });
       }
 
-      /* Seamless 60FPS ping-pong player without seek latency */
+      /* Synchronous in-memory frame cache with zero-gap turnaround */
       const video = document.getElementById('bgVideo');
       const canvas = document.getElementById('bgCanvas');
       const ctx = canvas.getContext('2d');
       const frames = [];
       let isCapturing = true;
 
-      video.addEventListener('loadedmetadata', () => {
-        canvas.width = video.videoWidth || 300;
-        canvas.height = video.videoHeight || 300;
-        video.play();
-      });
+      // Detect frame-by-frame support
+      const hasRVFC = 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
 
-      const captureInitialPass = () => {
-        if (!isCapturing) return;
-        
-        if (!video.ended && !video.paused) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const storeFrame = () => {
+        const offscreen = document.createElement('canvas');
+        offscreen.width = canvas.width;
+        offscreen.height = canvas.height;
+        const offCtx = offscreen.getContext('2d');
+        offCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          createImageBitmap(canvas).then((bmp) => {
-            if (isCapturing) frames.push(bmp);
-          });
-          requestAnimationFrame(captureInitialPass);
+        // Immediate first-frame preview (avoids initial blank canvas)
+        if (frames.length === 0) {
+          ctx.drawImage(offscreen, 0, 0);
         }
+        frames.push(offscreen);
       };
 
-      video.addEventListener('play', () => {
-        if (isCapturing) requestAnimationFrame(captureInitialPass);
-      });
-
-      video.addEventListener('ended', () => {
+      const startPingPongLoop = () => {
+        if (!isCapturing || frames.length < 2) return;
         isCapturing = false;
-        video.remove(); // Clean up original video element
-
-        if (frames.length === 0) return;
+        video.pause();
+        video.remove();
 
         let frameIndex = frames.length - 1;
-        let direction = -1; // -1: reverse, 1: forward
+        let direction = -1;
         const totalDuration = (video.duration || 2) * 1000;
         const frameInterval = totalDuration / frames.length;
         let lastTimestamp = performance.now();
 
-        const pingPongLoop = (now) => {
+        const loop = (now) => {
           const delta = now - lastTimestamp;
 
           if (delta >= frameInterval) {
@@ -437,6 +430,7 @@
 
             frameIndex += direction * steps;
 
+            // Clamp and reverse without skipping index bounds
             if (frameIndex >= frames.length - 1) {
               frameIndex = frames.length - 1;
               direction = -1;
@@ -445,15 +439,46 @@
               direction = 1;
             }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Direct in-place draw - no blank clear phase to eliminate blackouts
             ctx.drawImage(frames[frameIndex], 0, 0);
           }
 
-          requestAnimationFrame(pingPongLoop);
+          requestAnimationFrame(loop);
         };
 
-        requestAnimationFrame(pingPongLoop);
+        requestAnimationFrame(loop);
+      };
+
+      const processCapture = () => {
+        if (!isCapturing) return;
+
+        storeFrame();
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        if (hasRVFC) {
+          video.requestVideoFrameCallback(processCapture);
+        } else {
+          requestAnimationFrame(processCapture);
+        }
+      };
+
+      video.addEventListener('loadedmetadata', () => {
+        canvas.width = video.videoWidth || 300;
+        canvas.height = video.videoHeight || 300;
+        video.play().catch(() => {});
       });
+
+      video.addEventListener('play', () => {
+        if (isCapturing) {
+          if (hasRVFC) {
+            video.requestVideoFrameCallback(processCapture);
+          } else {
+            requestAnimationFrame(processCapture);
+          }
+        }
+      });
+
+      video.addEventListener('ended', startPingPongLoop);
       
     });
   </script>
