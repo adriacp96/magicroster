@@ -412,9 +412,13 @@
       const magicBtn = document.getElementById('bookmarkletBtn');
       if (magicBtn) {
         magicBtn.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text/x-moz-url', magicBtn.href + '\n' + magicBtn.title);
-          e.dataTransfer.setData('text/uri-list', magicBtn.href);
-          e.dataTransfer.setData('text/plain', magicBtn.href);
+          const bookmarkUrl = magicBtn.href;
+          const bookmarkTitle = "🪄 Magic Roster";
+          
+          // Formatos estándar para asegurar que el navegador capture el título al arrastrar
+          e.dataTransfer.setData('text/plain', bookmarkUrl);
+          e.dataTransfer.setData('text/uri-list', bookmarkUrl);
+          e.dataTransfer.setData('text/x-moz-url', bookmarkUrl + '\n' + bookmarkTitle);
         });
       }
 
