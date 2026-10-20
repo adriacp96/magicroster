@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
   <meta name="description" content="Magic Roster - Drag and drop bookmarklet for Crew Portal">
   <title>RosterCal</title>
 
-  <!-- Preload assets -->
-  <link rel="preload" href="rostybw.png" as="image">
-  <link rel="preload" href="rosty.mov" as="video" type="video/quicktime">
+  <!-- Prioridad máxima únicamente para el recurso crítico visible al instante -->
+  <link rel="preload" href="rostybw.png" as="image" fetchpriority="high">
 
   <!-- Favicon & Apple Touch Icon -->
   <link rel="icon" type="image/png" href="rostyicon.png">
@@ -30,16 +30,35 @@
       --rosty-size: clamp(110px, 20vw, 170px);
     }
 
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     html, body {
       background-color: var(--bg-body);
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100%;
-      overflow: hidden;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
-      position: relative;
+      -moz-osx-font-smoothing: grayscale;
+      touch-action: manipulation;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding:
+        max(16px, env(safe-area-inset-top))
+        max(16px, env(safe-area-inset-right))
+        max(16px, env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
     }
 
     .content-wrapper {
@@ -51,15 +70,11 @@
       align-items: center;
       gap: clamp(16px, 3vh, 24px);
       z-index: 1;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 0 16px;
-      box-sizing: border-box;
+      margin: auto 0;
+      padding: 12px 0;
     }
 
-    /* Fixed-space wrapper prevents layout shift */
+    /* Contenedor de dimensiones fijas para evitar saltos de diseño (CLS = 0) */
     .bg-video-container {
       position: relative;
       z-index: 0;
@@ -73,21 +88,22 @@
       pointer-events: none;
       user-select: none;
       -webkit-user-select: none;
+      flex-shrink: 0;
     }
 
-    /* Instant Black & White Placeholder */
+    /* Imagen estática instantánea en B/N */
     .bg-placeholder {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
       z-index: 2;
       opacity: 1;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.5s ease;
       pointer-events: none;
       -webkit-touch-callout: none;
+      will-change: opacity;
     }
 
     .bg-placeholder.fade-out {
@@ -96,8 +112,7 @@
 
     .bg-canvas {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -123,10 +138,11 @@
       animation: borderMotion 4s ease infinite;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
     }
 
     .button-container:hover {
-      transform: scale(1.01);
+      transform: scale(1.015);
     }
 
     @keyframes borderMotion {
@@ -144,7 +160,6 @@
       gap: 12px;
       width: max-content;
       max-width: 100%;
-      box-sizing: border-box;
       background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -155,8 +170,10 @@
       padding: clamp(18px, 4vw, 26px) clamp(22px, 4.5vw, 28px);
       border-radius: 34px;
       border: none;
-      user-select: none;
       cursor: grab;
+      -webkit-user-drag: element;
+      user-select: none;
+      -webkit-user-select: none;
       transition: background var(--transition-speed) ease, transform 0.1s ease;
     }
 
@@ -164,7 +181,7 @@
       outline: 2px solid var(--accent-cyan);
       outline-offset: 4px;
     }
-    
+
     .magic-button:active {
       cursor: grabbing;
       transform: scale(0.98);
@@ -173,9 +190,8 @@
     .accordion {
       position: relative;
       z-index: 2;
-      width: fit-content;
-      max-width: 100%;
-      box-sizing: border-box;
+      width: 100%;
+      max-width: 420px;
       overflow: hidden;
     }
 
@@ -190,10 +206,10 @@
       font-weight: 500;
       cursor: pointer;
       user-select: none;
+      -webkit-user-select: none;
       background: transparent;
       border: none;
       width: 100%;
-      box-sizing: border-box;
       transition: color 0.2s ease;
       outline: none;
     }
@@ -205,7 +221,7 @@
 
     .accordion-header:focus-visible {
       outline: 2px solid var(--text-muted);
-      border-radius: 4px;
+      border-radius: 6px;
     }
 
     .arrow {
@@ -225,18 +241,17 @@
     .accordion-content {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.5s ease, opacity 0.5s ease;
-      padding: 0 clamp(16px, 4vw, 24px);
+      transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), padding 0.45s ease, opacity 0.4s ease;
+      padding: 0 clamp(12px, 4vw, 24px);
       opacity: 0;
       visibility: hidden;
     }
 
     .accordion.active .accordion-content {
-      max-height: 600px;
-      padding-bottom: clamp(18px, 3.5vw, 22px);
+      max-height: 520px;
+      padding-bottom: clamp(14px, 3vh, 22px);
       opacity: 1;
       visibility: visible;
-      overflow-y: auto;
     }
 
     .os-title {
@@ -250,7 +265,7 @@
     }
 
     .os-title:first-child {
-      margin-top: 0;
+      margin-top: 4px;
     }
 
     .steps {
@@ -258,11 +273,11 @@
       margin: 0 0 16px 0;
       padding: 0;
       color: var(--text-main);
-      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      font-size: clamp(0.82rem, 2vw, 0.9rem);
       line-height: 1.5;
       list-style: none;
     }
-    
+
     .steps:last-child {
       margin-bottom: 0;
     }
@@ -281,7 +296,7 @@
       content: '';
       position: absolute;
       left: 0;
-      top: 2px;
+      top: 3px;
       width: 16px;
       height: 16px;
       background-size: contain;
@@ -304,6 +319,7 @@
       margin-left: 4px;
       color: var(--accent-cyan);
       text-decoration: none;
+      vertical-align: middle;
       transition: color 0.2s ease, transform 0.2s ease;
     }
 
@@ -315,8 +331,8 @@
     }
 
     .external-arrow svg {
-      width: 13px;
-      height: 13px;
+      width: 14px;
+      height: 14px;
       stroke: currentColor;
       stroke-width: 2.5;
       stroke-linecap: round;
@@ -325,49 +341,53 @@
     }
 
     .footer-signature {
-      position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
       color: rgba(255, 255, 255, 0.4);
       font-size: 0.8rem;
       white-space: nowrap;
       z-index: 10;
+      padding-top: 8px;
+      flex-shrink: 0;
     }
   </style>
 </head>
 <body>
 
   <main class="content-wrapper">
-    <!-- Immediate B&W static frame fading smoothly into the dynamic ping-pong canvas -->
+    <!-- Fotograma B/N instantáneo con transición fluida al canvas animado -->
     <div class="bg-video-container" aria-hidden="true">
-      <img id="placeholderImg" src="rostybw.png" alt="" class="bg-placeholder">
-      <canvas id="bgCanvas" class="bg-canvas" width="300" height="300"></canvas>
+      <img
+        id="placeholderImg"
+        src="rostybw.png"
+        alt=""
+        width="170"
+        height="170"
+        fetchpriority="high"
+        decoding="sync"
+        class="bg-placeholder">
+      <canvas id="bgCanvas" class="bg-canvas" width="340" height="340"></canvas>
       <video
         id="bgVideo"
         class="bg-video"
-        src="rosty.mov"
         muted
         playsinline
-        preload="auto"
+        webkit-playsinline
+        preload="none"
         disablepictureinpicture>
       </video>
     </div>
 
     <div class="button-container">
-      <a draggable="true" id="bookmarkletBtn" title="🪄 Magic Roster" aria-label="🪄 Magic Roster" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button">
-        🪄 Magic Roster
-      </a>
+      <!-- Texto en una sola línea sin espacios extra para que el navegador tome "🪄 Magic Roster" exactamente como título del marcador -->
+      <a draggable="true" id="bookmarkletBtn" title="🪄 Magic Roster" aria-label="🪄 Magic Roster" href="javascript:(function()%7Bconst%20mainContainer=document.querySelector('%23PrintRosterDiv-ModalBody');if(!mainContainer)%7Balert('Error:%20Could%20not%20find%20the%20roster%20container%20on%20this%20page.');return;%7Dconst%20cloned=mainContainer.cloneNode(true);const%20svg=cloned.querySelector('%23SVGContainer');if(svg)svg.remove();const%20styles=cloned.querySelectorAll('style');styles.forEach(s=%3Es.nodeType===1&&s.remove());const%20rawText=cloned.innerText.split('%5Cn').filter(l=%3El.trim()!=='').join('%5Cn');const%20iframe=document.createElement('iframe');iframe.id='rostercal-magic-iframe';iframe.src='https://adriacp96.github.io/rostercal/?magic=true';iframe.style.cssText='position:fixed;top:0;left:0;width:100vw;height:100vh;border:none;background:transparent;z-index:999998;';const%20close=document.createElement('button');close.innerHTML='%E2%9C%95%20Close';close.style.cssText='position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.5);border:none;color:%23fff;font-size:14px;font-weight:bold;padding:8px%2016px;border-radius:20px;cursor:pointer;z-index:999999;backdrop-filter:blur(5px);';close.onclick=()=%3E%7Biframe.remove();close.remove();%7D;document.body.appendChild(iframe);document.body.appendChild(close);iframe.onload=()=%3E%7Biframe.contentWindow.postMessage(%7Btype:'ROSTER_DATA',text:rawText%7D,'*');%7D;%7D)();" class="magic-button">🪄 Magic Roster</a>
     </div>
 
     <section class="accordion" id="instructionAccordion">
-      <button class="accordion-header" id="accordionToggleBtn" aria-expanded="false" aria-controls="accordionContent">
+      <button type="button" class="accordion-header" id="accordionToggleBtn" aria-expanded="false" aria-controls="accordionContent">
         <span>Instructions</span>
         <div class="arrow" aria-hidden="true"></div>
       </button>
-      
+
       <div class="accordion-content" id="accordionContent" role="region" aria-labelledby="accordionToggleBtn">
-        
         <h2 class="os-title">Desktop Installation</h2>
         <ul class="steps">
           <li class="icon-keyboard">Show bookmarks bar: <strong>Cmd+Shift+B</strong> (Mac) or <span>Ctrl+Shift+B</span> (Win).</li>
@@ -382,16 +402,15 @@
         <h2 class="os-title">How To Use</h2>
         <ul class="steps">
           <li class="icon-play">
-            Open Crew Portal 
+            Open Crew Portal
             <a href="https://emiratesgroup.sharepoint.com/sites/ccp/roster/Pages/Roster.aspx" target="_blank" rel="noopener noreferrer" class="external-arrow" aria-label="Open Crew Portal in new tab" title="Open Crew Portal">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
             </a>
           </li>
-          <li class="icon-play">Click <strong>Roster & Apps</strong> (left hand side of the page).</li>
+          <li class="icon-play">Click <strong>Roster &amp; Apps</strong> (left hand side of the page).</li>
           <li class="icon-play">Click <strong>Print/email</strong> (top right hand side of the page).</li>
           <li class="icon-play">Click the <strong>🪄 Magic Roster</strong> bookmark (previously saved).</li>
         </ul>
-
       </div>
     </section>
   </main>
@@ -400,45 +419,57 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      
       const accordionBtn = document.getElementById('accordionToggleBtn');
       const accordionContainer = document.getElementById('instructionAccordion');
-      
-      accordionBtn.addEventListener('click', () => {
-        const isActive = accordionContainer.classList.toggle('active');
-        accordionBtn.setAttribute('aria-expanded', isActive);
-      });
-
       const magicBtn = document.getElementById('bookmarkletBtn');
+
+      const toggleAccordion = (forceOpen) => {
+        const isActive = typeof forceOpen === 'boolean'
+          ? (accordionContainer.classList.toggle('active', forceOpen), forceOpen)
+          : accordionContainer.classList.toggle('active');
+        accordionBtn.setAttribute('aria-expanded', String(isActive));
+      };
+
+      accordionBtn.addEventListener('click', () => toggleAccordion());
+
       if (magicBtn) {
-        magicBtn.addEventListener('dragstart', (e) => {
-          const bookmarkUrl = magicBtn.href;
-          const bookmarkTitle = "🪄 Magic Roster";
-          
-          // Formatos estándar para asegurar que el navegador capture el título al arrastrar
-          e.dataTransfer.setData('text/plain', bookmarkUrl);
-          e.dataTransfer.setData('text/uri-list', bookmarkUrl);
-          e.dataTransfer.setData('text/x-moz-url', bookmarkUrl + '\n' + bookmarkTitle);
+        // Si el usuario hace clic normal en lugar de arrastrarlo, abrimos las instrucciones
+        // sin ejecutar el script de marcadores en esta página.
+        magicBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          toggleAccordion(true);
         });
+
+        // No sobrescribimos text/plain ni text/uri-list en dragstart:
+        // Dejar actuar al navegador de forma nativa sobre el <a href="...">🪄 Magic Roster</a>
+        // garantiza que Chrome, Safari, Edge y Firefox guarden "🪄 Magic Roster" como nombre del marcador.
       }
 
+      // Carga diferida y optimizada del vídeo para no bloquear el renderizado inicial
       const placeholder = document.getElementById('placeholderImg');
       const video = document.getElementById('bgVideo');
       const canvas = document.getElementById('bgCanvas');
       const ctx = canvas.getContext('2d', { alpha: true });
+
+      const MAX_DIMENSION = 340; // 2x Retina para el máximo de 170px CSS
+      const MAX_FRAMES = 120;
       const frames = [];
       let isCapturing = true;
       let hasFaded = false;
+      let lastCapturedTime = -1;
 
       const triggerFade = () => {
-        if (!hasFaded) {
+        if (!hasFaded && placeholder) {
           hasFaded = true;
           placeholder.classList.add('fade-out');
-          setTimeout(() => placeholder.remove(), 700);
+          setTimeout(() => placeholder.remove(), 550);
         }
       };
 
       const storeFrame = () => {
+        if (video.currentTime === lastCapturedTime || frames.length >= MAX_FRAMES) return;
+        lastCapturedTime = video.currentTime;
+
         const offscreen = document.createElement('canvas');
         offscreen.width = canvas.width;
         offscreen.height = canvas.height;
@@ -453,24 +484,33 @@
       };
 
       const startPingPongLoop = () => {
-        if (!isCapturing || frames.length < 2) return;
+        if (!isCapturing) return;
         isCapturing = false;
+
+        const duration = video.duration || 2;
         video.pause();
+        video.removeAttribute('src');
+        video.load();
         video.remove();
+
+        if (frames.length < 2) return;
 
         let frameIndex = frames.length - 1;
         let direction = -1;
-        const totalDuration = (video.duration || 2) * 1000;
-        const frameInterval = totalDuration / frames.length;
+        const frameInterval = (duration * 1000) / frames.length;
         let lastTimestamp = performance.now();
 
         const loop = (now) => {
-          const delta = now - lastTimestamp;
+          if (document.hidden) {
+            lastTimestamp = now;
+            requestAnimationFrame(loop);
+            return;
+          }
 
+          const delta = now - lastTimestamp;
           if (delta >= frameInterval) {
             const steps = Math.floor(delta / frameInterval);
             lastTimestamp = now - (delta % frameInterval);
-
             frameIndex += direction * steps;
 
             if (frameIndex >= frames.length - 1) {
@@ -498,6 +538,11 @@
         storeFrame();
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+        if (frames.length >= MAX_FRAMES) {
+          startPingPongLoop();
+          return;
+        }
+
         if (hasRVFC) {
           video.requestVideoFrameCallback(processCapture);
         } else {
@@ -506,16 +551,21 @@
       };
 
       const initPlayback = () => {
-        canvas.width = video.videoWidth || 300;
-        canvas.height = video.videoHeight || 300;
-        video.play().catch(() => {});
+        const vw = video.videoWidth || MAX_DIMENSION;
+        const vh = video.videoHeight || MAX_DIMENSION;
+        const scale = Math.min(1, MAX_DIMENSION / Math.max(vw, vh));
+        canvas.width = Math.round(vw * scale);
+        canvas.height = Math.round(vh * scale);
+
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Si el navegador bloquea autoplay o no soporta .mov, mantenemos rostybw.png intacto
+          });
+        }
       };
 
-      if (video.readyState >= 1) {
-        initPlayback();
-      } else {
-        video.addEventListener('loadedmetadata', initPlayback);
-      }
+      video.addEventListener('loadedmetadata', initPlayback, { once: true });
 
       video.addEventListener('play', () => {
         if (isCapturing) {
@@ -525,10 +575,15 @@
             requestAnimationFrame(processCapture);
           }
         }
-      });
+      }, { once: true });
 
-      video.addEventListener('ended', startPingPongLoop);
-      
+      video.addEventListener('ended', startPingPongLoop, { once: true });
+
+      // Inyectamos el vídeo tras el primer frame de pintado para que la web cargue instantáneamente
+      requestAnimationFrame(() => {
+        video.src = 'rosty.mov';
+        video.load();
+      });
     });
   </script>
 
